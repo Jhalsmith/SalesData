@@ -1,0 +1,477 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import statistics as stats
+
+sales_data = pd.read_csv(r"filepathway")
+
+# Making new columns in the df to more easily access the date
+# My file had 220k rows and three years, 2017-2019. Can adjust variables as needed for other datasets
+
+year = []
+for i in range(220576):
+    year.append('0')
+mnth = []
+for i in range(220576):
+    mnth.append('0')
+
+sales_data["YEAR"] = year
+sales_data["MONTHNUM"] = mnth
+
+sales_data = sales_data.reset_index()
+for index, row in sales_data.iterrows():
+    text = row['Month']
+    if text[-1] == "9":
+        sales_data.at[index, "YEAR"] = 2019
+    elif text[-1] == "8":
+        sales_data.at[index, "YEAR"] = 2018
+    elif text[-1] == "7":
+        sales_data.at[index, "YEAR"] = 2017
+    if text[1] == "/":
+        for i in range(1, 10):
+            if text[-8] == str(i):
+                sales_data.at[index, "MONTHNUM"] = i
+    else:
+        if text[-8] == "1":
+            sales_data.at[index, "MONTHNUM"] = 11
+        elif text[-8] == "2":
+            sales_data.at[index, "MONTHNUM"] = 12
+        elif text[-8] == "0":
+            sales_data.at[index, "MONTHNUM"] = 10
+        else:
+            sales_data.at[index, "MONTHNUM"] = 99
+
+# Asking user to determine which graphs they want to see
+optionslist = ["Yearly Totals", "Monthly Totals", "Yearly Averages", "Monthly Averages"]
+for i in optionslist:
+    print(i)
+answer = str(input("What data would you like a graph about? ")).lower()
+
+# Creates a dictionary that has the data needed to make the graph
+def ReturnNumber(answer):
+    if answer == "yearly totals":
+        yeartot = {"2017": 0, "2018": 0, "2019": 0}
+        for index, row in sales_data.iterrows():
+            if row['YEAR'] == 2017:
+                yeartot["2017"] = yeartot["2017"] + row['Order']
+            elif row['YEAR'] == 2018:
+                yeartot["2018"] = yeartot["2018"] + row['Order']
+            elif row['YEAR'] == 2019:
+                yeartot["2019"] = yeartot["2019"] + row['Order']
+        return yeartot
+    elif answer == "monthly totals":
+        moptionslist = ["2017", "2018", "2019"]
+        for i in moptionslist:
+            print(i)
+        # Made this variable global to use in the CreateGraph function
+        global yearanswer
+        yearanswer = int(input("What year would you like the monthly totals from? "))
+        monthtot = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
+                    "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
+        for index, row in sales_data.iterrows():
+            if row['YEAR'] == yearanswer:
+                monthtot[str(row['MONTHNUM'])] = monthtot[str(row['MONTHNUM'])] + row['Order']
+        return monthtot
+    elif answer == "yearly averages":
+        accountstot17 = {}
+        accountstot18 = {}
+        accountstot19 = {}
+        # Gathering totals for each account number
+        for index, row in sales_data.iterrows():
+            accountNum = str(row['AccountNumber'])
+            if row['YEAR'] == 2017:
+                if accountNum not in accountstot17:
+                    accountstot17[accountNum] = 0
+                accountstot17[accountNum] = accountstot17[accountNum] + row['Order']
+            elif row['YEAR'] == 2018:
+                if accountNum not in accountstot18:
+                    accountstot18[accountNum] = 0
+                accountstot18[accountNum] = accountstot18[accountNum] + row['Order']
+            elif row['YEAR'] == 2019:
+                if accountNum not in accountstot19:
+                    accountstot19[accountNum] = 0
+                accountstot19[accountNum] = accountstot19[accountNum] + row['Order']
+        len17 = len(accountstot17.keys())
+        len18 = len(accountstot18.keys())
+        len19 = len(accountstot19.keys())
+        sum17 = sum(accountstot17.values())
+        sum18 = sum(accountstot18.values())
+        sum19 = sum(accountstot19.values())
+        accountstot = {"2017": round(sum17/len17, 2), "2018": round(sum18/len18, 2), "2019": round(sum19/len19, 2)}
+        # This only returns the mean, so the median values are actually calculated in the CreateGraph function
+        return accountstot
+    elif answer == "monthly averages":
+        moptionslist = ["2017", "2018", "2019"]
+        for i in moptionslist:
+            print(i)
+        global yearansweravg
+        yearansweravg = int(input("What year would you like the monthly averages from? "))
+        monthavg1 = {}
+        monthavg2 = {}
+        monthavg3 = {}
+        monthavg4 = {}
+        monthavg5 = {}
+        monthavg6 = {}
+        monthavg7 = {}
+        monthavg8 = {}
+        monthavg9 = {}
+        monthavg10 = {}
+        monthavg11 = {}
+        monthavg12 = {}
+        # I know there's a better way to do this than to have 12 identical if statements, but I couldn't think of it
+        for index, row in sales_data.iterrows():
+            accountNum = str(row['AccountNumber'])
+            if row['YEAR'] == yearansweravg:
+                if row['MONTHNUM'] == 1:
+                    if accountNum not in monthavg1:
+                        monthavg1[accountNum] = 0
+                    monthavg1[accountNum] = monthavg1[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 2:
+                    if accountNum not in monthavg2:
+                        monthavg2[accountNum] = 0
+                    monthavg2[accountNum] = monthavg2[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 3:
+                    if accountNum not in monthavg3:
+                        monthavg3[accountNum] = 0
+                    monthavg3[accountNum] = monthavg3[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 4:
+                    if accountNum not in monthavg4:
+                        monthavg4[accountNum] = 0
+                    monthavg4[accountNum] = monthavg4[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 5:
+                    if accountNum not in monthavg5:
+                        monthavg5[accountNum] = 0
+                    monthavg5[accountNum] = monthavg5[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 6:
+                    if accountNum not in monthavg6:
+                        monthavg6[accountNum] = 0
+                    monthavg6[accountNum] = monthavg6[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 7:
+                    if accountNum not in monthavg7:
+                        monthavg7[accountNum] = 0
+                    monthavg7[accountNum] = monthavg7[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 8:
+                    if accountNum not in monthavg8:
+                        monthavg8[accountNum] = 0
+                    monthavg8[accountNum] = monthavg8[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 9:
+                    if accountNum not in monthavg9:
+                        monthavg9[accountNum] = 0
+                    monthavg9[accountNum] = monthavg9[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 10:
+                    if accountNum not in monthavg10:
+                        monthavg10[accountNum] = 0
+                    monthavg10[accountNum] = monthavg10[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 11:
+                    if accountNum not in monthavg11:
+                        monthavg11[accountNum] = 0
+                    monthavg11[accountNum] = monthavg11[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 12:
+                    if accountNum not in monthavg12:
+                        monthavg12[accountNum] = 0
+                    monthavg12[accountNum] = monthavg12[accountNum] + row['Order']
+        # Dictionary that stores all of the rounded averages
+        monthavgs = {"Jan": round(sum(monthavg1.values())/len(monthavg1.keys()), 2), "Feb": round(sum(monthavg2.values())/len(monthavg2.keys()), 2),
+                     "Mar": round(sum(monthavg3.values())/len(monthavg3.keys()), 2), "Apr": round(sum(monthavg4.values())/len(monthavg4.keys()), 2),
+                     "May": round(sum(monthavg5.values())/len(monthavg5.keys()), 2), "Jun": round(sum(monthavg6.values())/len(monthavg6.keys()), 2),
+                     "Jul": round(sum(monthavg7.values())/len(monthavg7.keys()), 2), "Aug": round(sum(monthavg8.values())/len(monthavg8.keys()), 2),
+                     "Sep": round(sum(monthavg9.values())/len(monthavg9.keys()), 2), "Oct": round(sum(monthavg10.values())/len(monthavg10.keys()), 2),
+                     "Nov": round(sum(monthavg11.values())/len(monthavg11.keys()), 2), "Dec": round(sum(monthavg12.values())/len(monthavg12.keys()), 2)}
+        return monthavgs
+    elif answer == "monthly change": # 5th option that doesn't work
+        # The goal was to count the number of times an account increased the orders from one month to the next
+        global yearanswer3
+        montha = 1
+        monthb = 2
+        monthchaa = {}
+        monthchab = {}
+        increasedict = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
+                        "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
+        yearanswer3 = int(input("What year would you like the monthly change from? "))
+        while monthb < 13:
+            for index, row in sales_data.iterrows():
+                accountNum = str(row['AccountNumber'])
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == montha:
+                    if accountNum not in monthchaa:
+                        monthchaa[str(accountNum)] = row['Order']
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == monthb:
+                    if accountNum not in monthchab:
+                        monthchab[str(accountNum)] = row['Order']
+            # Checking for the Account Number in both dicts and seeing if there is an increase between the months
+            for key in monthchaa:
+                if key in monthchab:
+                    if monthchaa[key] < monthchab[key]:
+                        increasedict[str(monthb)] = increasedict[str(monthb)] + 1
+            montha += 1
+            monthb += 1
+        return increasedict
+
+# Function that is responsible for using matplotlib to spit out the graphs
+# Also does extra calculations (like for the median) more than I would like 
+def CreateGraph(answer, returneddict):
+    if answer == "yearly totals":
+        fig, ax = plt.subplots()
+        myList = returneddict.items()
+        x, y = zip(*myList)
+        ax.plot(x, y)
+        ax.set_ylim([0, 400000])
+        ax.fill_between(x, y)
+        ax.set_xlabel("Years")
+        ax.set_ylabel("Orders")
+        ax.set_title("Total Yearly Orders")
+        # Adding the labels to the data points
+        for i in range(len(x)):
+            ax.text(x[i], y[i], y[i], size=12, backgroundcolor="teal", color="white")
+        plt.show()
+    elif answer == "monthly totals":
+        # Give the user the option to see the super graph that combines all years
+        moptionslist = ["Yes", "No"]
+        for i in moptionslist:
+            print(i)
+        mondecision = str(input("Would you like to see all years? ")).lower()
+        if mondecision == "yes":
+            print("You will be prompted three times for what year would like")
+            print("Please type in 2019, then 2018, then 2017 for this code to work")
+            # This is the only way I could think of to get the data for all three years together
+            monthtot2019 = ReturnNumber(answer)
+            monthtot2018 = ReturnNumber(answer)
+            monthtot2017 = ReturnNumber(answer)
+            fig, ax = plt.subplots(2, 2)
+            myList2019 = monthtot2019.items()
+            myList2018 = monthtot2018.items()
+            myList2017 = monthtot2017.items()
+            x, y19 = zip(*myList2019)
+            x, y18 = zip(*myList2018)
+            z, y17 = zip(*myList2017)
+            # 2017 plot
+            ax[0, 1].plot(x, y17)
+            ax[0, 1].set_ylim([0, 32000])
+            ax[0, 1].fill_between(x, y17, color="red")
+            ax[0, 1].set_xlabel("Months")
+            ax[0, 1].set_ylabel("Orders")
+            ax[0, 1].set_title("Total Monthly Orders for 2017")
+            for i in range(len(x)):
+                ax[0, 1].text(x[i], y17[i], y17[i], size=8, backgroundcolor="teal", color="white")
+            # 2018 plot
+            ax[1, 0].plot(x, y18)
+            ax[1, 0].set_ylim([0, 32000])
+            ax[1, 0].fill_between(x, y18, color="green")
+            ax[1, 0].set_xlabel("Months")
+            ax[1, 0].set_ylabel("Orders")
+            ax[1, 0].set_title("Total Monthly Orders for 2018")
+            for i in range(len(x)):
+                ax[1, 0].text(x[i], y18[i], y18[i], size=8, backgroundcolor="teal", color="white")
+            # 2019 plot
+            ax[1, 1].plot(x, y19)
+            ax[1, 1].set_ylim([0, 32000])
+            ax[1, 1].fill_between(x, y19, color="blue")
+            ax[1, 1].set_xlabel("Months")
+            ax[1, 1].set_ylabel("Orders")
+            ax[1, 1].set_title("Total Monthly Orders for 2019")
+            for i in range(len(x)):
+                ax[1, 1].text(x[i], y19[i], y19[i], size=8, backgroundcolor="teal", color="white")
+            # Combo plot
+            ax[0, 0].plot(x, y17, color="red")
+            ax[0, 0].plot(x, y18, color="green")
+            ax[0, 0].plot(x, y19, color="blue")
+            ax[0, 0].set_ylim([0, 32000])
+            ax[0, 0].set_xlabel("Months")
+            ax[0, 0].set_ylabel("Orders")
+            ax[0, 0].set_title("Total Monthly Orders for all three years")
+            plt.show()
+        elif mondecision == "no":
+            fig, ax = plt.subplots()
+            myList = returneddict.items()
+            x, y = zip(*myList)
+            ax.plot(x, y)
+            ax.set_ylim([0, 32000])
+            ax.fill_between(x, y)
+            ax.set_xlabel("Months")
+            ax.set_ylabel("Orders")
+            ax.set_title(f"Total Monthly Orders for {yearanswer}")
+            for i in range(len(x)):
+                ax.text(x[i], y[i], y[i], size=12, backgroundcolor="teal", color="white")
+            plt.show()
+    elif answer == "yearly averages":
+        fig, ax = plt.subplots()
+        myList = returneddict.items()
+        x, y = zip(*myList)
+        ax.plot(x, y)
+        for i in range(len(x)):
+            ax.text(x[i], y[i], y[i], size=10, backgroundcolor="teal", color="white")
+        # All of this is calculating the median since we only have the mean values as of now
+        accountstot17 = {}
+        accountstot18 = {}
+        accountstot19 = {}
+        for index, row in sales_data.iterrows():
+            accountNum = str(row['AccountNumber'])
+            if row['YEAR'] == 2017:
+                if accountNum not in accountstot17:
+                    accountstot17[accountNum] = 0
+                accountstot17[accountNum] = accountstot17[accountNum] + row['Order']
+            elif row['YEAR'] == 2018:
+                if accountNum not in accountstot18:
+                    accountstot18[accountNum] = 0
+                accountstot18[accountNum] = accountstot18[accountNum] + row['Order']
+            elif row['YEAR'] == 2019:
+                if accountNum not in accountstot19:
+                    accountstot19[accountNum] = 0
+                accountstot19[accountNum] = accountstot19[accountNum] + row['Order']
+        list17 = list(accountstot17.values())
+        list18 = list(accountstot18.values())
+        list19 = list(accountstot19.values())
+        med17 = stats.median(list17)
+        med18 = stats.median(list18)
+        med19 = stats.median(list19)
+        meddict = {"2017": med17, "2018": med18, "2019": med19}
+        myList2 = meddict.items()
+        x, y = zip(*myList2)
+        ax.plot(x, y)
+        ax.set_xlabel("Years")
+        ax.set_ylabel("Orders")
+        ax.set_title("Mean Orders over Median Orders")
+        for i in range(len(x)):
+            ax.text(x[i], y[i], y[i], size=10, backgroundcolor="teal", color="white")
+        plt.show()
+    elif answer == "monthly averages":
+        fig, ax = plt.subplots()
+        myList = returneddict.items()
+        x, y = zip(*myList)
+        ax.plot(x, y)
+        for i in range(len(x)):
+            ax.text(x[i], y[i], y[i], size=10, backgroundcolor="teal", color="white")
+        monthavg1 = {}
+        monthavg2 = {}
+        monthavg3 = {}
+        monthavg4 = {}
+        monthavg5 = {}
+        monthavg6 = {}
+        monthavg7 = {}
+        monthavg8 = {}
+        monthavg9 = {}
+        monthavg10 = {}
+        monthavg11 = {}
+        monthavg12 = {}
+        for index, row in sales_data.iterrows():
+            accountNum = str(row['AccountNumber'])
+            if row['YEAR'] == yearansweravg:
+                if row['MONTHNUM'] == 1:
+                    if accountNum not in monthavg1:
+                        monthavg1[accountNum] = 0
+                    monthavg1[accountNum] = monthavg1[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 2:
+                    if accountNum not in monthavg2:
+                        monthavg2[accountNum] = 0
+                    monthavg2[accountNum] = monthavg2[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 3:
+                    if accountNum not in monthavg3:
+                        monthavg3[accountNum] = 0
+                    monthavg3[accountNum] = monthavg3[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 4:
+                    if accountNum not in monthavg4:
+                        monthavg4[accountNum] = 0
+                    monthavg4[accountNum] = monthavg4[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 5:
+                    if accountNum not in monthavg5:
+                        monthavg5[accountNum] = 0
+                    monthavg5[accountNum] = monthavg5[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 6:
+                    if accountNum not in monthavg6:
+                        monthavg6[accountNum] = 0
+                    monthavg6[accountNum] = monthavg6[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 7:
+                    if accountNum not in monthavg7:
+                        monthavg7[accountNum] = 0
+                    monthavg7[accountNum] = monthavg7[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 8:
+                    if accountNum not in monthavg8:
+                        monthavg8[accountNum] = 0
+                    monthavg8[accountNum] = monthavg8[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 9:
+                    if accountNum not in monthavg9:
+                        monthavg9[accountNum] = 0
+                    monthavg9[accountNum] = monthavg9[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 10:
+                    if accountNum not in monthavg10:
+                        monthavg10[accountNum] = 0
+                    monthavg10[accountNum] = monthavg10[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 11:
+                    if accountNum not in monthavg11:
+                        monthavg11[accountNum] = 0
+                    monthavg11[accountNum] = monthavg11[accountNum] + row['Order']
+                elif row['MONTHNUM'] == 12:
+                    if accountNum not in monthavg12:
+                        monthavg12[accountNum] = 0
+                    monthavg12[accountNum] = monthavg12[accountNum] + row['Order']
+        meddict2 = {"Jan": stats.median(list(monthavg1.values())), "Feb": stats.median(list(monthavg2.values())),
+                   "Mar": stats.median(list(monthavg3.values())), "Apr": stats.median(list(monthavg4.values())),
+                   "May": stats.median(list(monthavg5.values())), "Jun": stats.median(list(monthavg6.values())),
+                   "Jul": stats.median(list(monthavg7.values())), "Aug": stats.median(list(monthavg8.values())),
+                   "Sep": stats.median(list(monthavg9.values())), "Oct": stats.median(list(monthavg10.values())),
+                   "Nov": stats.median(list(monthavg11.values())), "Dec": stats.median(list(monthavg12.values()))}
+        myList2 = meddict2.items()
+        x, y = zip(*myList2)
+        ax.plot(x, y)
+        for i in range(len(x)):
+            ax.text(x[i], y[i], y[i], size=10, backgroundcolor="teal", color="white")
+        ax.set_xlabel("Months")
+        ax.set_ylabel("Orders")
+        ax.set_title(f"Mean Orders over Median Orders for {yearansweravg}")
+        plt.show()
+    elif answer == "monthly change": # 5th option that doesn't work
+        # The code in the ReturnNumber function returned the dict of # of increases, this would've returned decreases
+        fig, ax = plt.subplots()
+        myList = returneddict.items()
+        x, y1 = zip(*myList)
+        montha = 1
+        monthb = 2
+        monthchaa = {}
+        monthchab = {}
+        decreasedict = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
+                        "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
+        while monthb < 13:
+            for index, row in sales_data.iterrows():
+                accountNum = str(row['AccountNumber'])
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == montha:
+                    if accountNum not in monthchaa:
+                        monthchaa[str(accountNum)] = row['Order']
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == monthb:
+                    if accountNum not in monthchab:
+                        monthchab[str(accountNum)] = row['Order']
+            for key in monthchaa:
+                if key in monthchab:
+                    if monthchaa[key] > monthchab[key]:
+                        decreasedict[str(monthb)] = decreasedict[str(monthb)] + 1
+            montha += 1
+            monthb += 1
+        myList2 = decreasedict.items()
+        x, y2 = zip(*myList)
+        montha = 1
+        monthb = 2
+        monthchaa = {}
+        monthchab = {}
+        zerodict = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
+                        "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
+        while monthb < 13:
+            for index, row in sales_data.iterrows():
+                accountNum = str(row['AccountNumber'])
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == montha:
+                    if accountNum not in monthchaa:
+                        monthchaa[str(accountNum)] = row['Order']
+                if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == monthb:
+                    if accountNum not in monthchab:
+                        monthchab[str(accountNum)] = row['Order']
+            for key in monthchaa:
+                if key in monthchab:
+                    if monthchaa[key] == 0 and monthchab[key] == 0:
+                        zerodict[str(monthb)] = zerodict[str(monthb)] + 1
+            montha += 1
+            monthb += 1
+        myList3 = decreasedict.items()
+        x, y3 = zip(*myList)
+        ax.plot(x, y1)
+        ax.plot(x, y2)
+        ax.plot(x, y3)
+        plt.show()
+
+# Using the two functions to give the user their desired graph
+CreateGraph(answer, ReturnNumber(answer))
