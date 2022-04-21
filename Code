@@ -13,23 +13,30 @@ for i in range(220576):
 mnth = []
 for i in range(220576):
     mnth.append('0')
-
+# Adding new columns to the dataframe. YEAR stores YYYY, Month stores MM
 sales_data["YEAR"] = year
 sales_data["MONTHNUM"] = mnth
 
 sales_data = sales_data.reset_index()
+# Looping through the entire dataset to add the correct Year and Month to the new columns I created
 for index, row in sales_data.iterrows():
+    # Variable that holds the current month
     text = row['Month']
+    # These if statements are reading the last character of the orginial Month column to determine what year the data is from
     if text[-1] == "9":
         sales_data.at[index, "YEAR"] = 2019
     elif text[-1] == "8":
         sales_data.at[index, "YEAR"] = 2018
     elif text[-1] == "7":
         sales_data.at[index, "YEAR"] = 2017
+    # If the second character in the string is a /, that means the Month number is one digit
+    # Assigning the MONTHNUM column equal to whatever the 8th digit from the back is, which should be the month number
     if text[1] == "/":
+        #There are only 9 one digit months in the year, so the range loops through 9 times
         for i in range(1, 10):
             if text[-8] == str(i):
                 sales_data.at[index, "MONTHNUM"] = i
+    # If the Month is actually a two digit month, then the 8th digit from the back will tell me if it's Oct, Nov, or Dec
     else:
         if text[-8] == "1":
             sales_data.at[index, "MONTHNUM"] = 11
@@ -44,34 +51,50 @@ for index, row in sales_data.iterrows():
 optionslist = ["Yearly Totals", "Monthly Totals", "Yearly Averages", "Monthly Averages"]
 for i in optionslist:
     print(i)
+# The answer variable will be used a lot in the follwoing code to determine what data to find and which graphs to create
+# The user must type one of the options out exactly, but capitalization doesn't matter85
 answer = str(input("What data would you like a graph about? ")).lower()
 
 # Creates a dictionary that has the data needed to make the graph
 def ReturnNumber(answer):
+    # Only running this code if the user types in Yearly Totals
     if answer == "yearly totals":
+        # Creating the dictionary that will later be sent to the CreateGraph function
         yeartot = {"2017": 0, "2018": 0, "2019": 0}
+        # For every row in the df, check the year
         for index, row in sales_data.iterrows():
+            # If it equals 2017, update 2017's dict value
             if row['YEAR'] == 2017:
                 yeartot["2017"] = yeartot["2017"] + row['Order']
+            # If it equals 2018, update 2018's dict value
             elif row['YEAR'] == 2018:
                 yeartot["2018"] = yeartot["2018"] + row['Order']
+            # If it equals 2019, update 2019's dict value
             elif row['YEAR'] == 2019:
                 yeartot["2019"] = yeartot["2019"] + row['Order']
         return yeartot
+    # Only run this code if the user types in Monthly Totals
     elif answer == "monthly totals":
+        # Showing the user the options they have. A graph will display for the months of the year they choose
         moptionslist = ["2017", "2018", "2019"]
         for i in moptionslist:
             print(i)
         # Made this variable global to use in the CreateGraph function
         global yearanswer
         yearanswer = int(input("What year would you like the monthly totals from? "))
+        # Creating the dict that will be sent to the Create Graph function
+        # Each number represents a month, and the value will be the total number of orders in that month from
+        # the year that the user choose
         monthtot = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
                     "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
+        # For every row in the df, if it equals the year the user choose, add it to the proper month
         for index, row in sales_data.iterrows():
             if row['YEAR'] == yearanswer:
                 monthtot[str(row['MONTHNUM'])] = monthtot[str(row['MONTHNUM'])] + row['Order']
         return monthtot
+    # Only run this code if the user typed Yearly Averages
     elif answer == "yearly averages":
+        # Creating dictionaries to hold all of the accounts and their total orders
         accountstot17 = {}
         accountstot18 = {}
         accountstot19 = {}
@@ -79,9 +102,12 @@ def ReturnNumber(answer):
         for index, row in sales_data.iterrows():
             accountNum = str(row['AccountNumber'])
             if row['YEAR'] == 2017:
+                # If the account number is not already in the dict as a key, then add it with a value of 0
                 if accountNum not in accountstot17:
                     accountstot17[accountNum] = 0
+                # Regardless of whether the account was in there before, we need to add the row to the account's total for the year
                 accountstot17[accountNum] = accountstot17[accountNum] + row['Order']
+            # Repeat the process with different years
             elif row['YEAR'] == 2018:
                 if accountNum not in accountstot18:
                     accountstot18[accountNum] = 0
@@ -90,21 +116,27 @@ def ReturnNumber(answer):
                 if accountNum not in accountstot19:
                     accountstot19[accountNum] = 0
                 accountstot19[accountNum] = accountstot19[accountNum] + row['Order']
+        # Create variables to hold the length of each dict and the sum of all of it's values
+        # Will make calculating the averages much easier
         len17 = len(accountstot17.keys())
         len18 = len(accountstot18.keys())
         len19 = len(accountstot19.keys())
         sum17 = sum(accountstot17.values())
         sum18 = sum(accountstot18.values())
         sum19 = sum(accountstot19.values())
+        # Calculate the mean for each year and store the result in a new dictionary
         accountstot = {"2017": round(sum17/len17, 2), "2018": round(sum18/len18, 2), "2019": round(sum19/len19, 2)}
         # This only returns the mean, so the median values are actually calculated in the CreateGraph function
         return accountstot
+    # This code is only run if the user types in Monthly Averages
     elif answer == "monthly averages":
+        # Ask the user from what year would they like to see the monthly data
         moptionslist = ["2017", "2018", "2019"]
         for i in moptionslist:
             print(i)
         global yearansweravg
         yearansweravg = int(input("What year would you like the monthly averages from? "))
+        # Creating 12 dictionaries to hold the account information for each month. 
         monthavg1 = {}
         monthavg2 = {}
         monthavg3 = {}
@@ -118,8 +150,13 @@ def ReturnNumber(answer):
         monthavg11 = {}
         monthavg12 = {}
         # I know there's a better way to do this than to have 12 identical if statements, but I couldn't think of it
+        # For every row in the df, check if the Year matches what the user choose
         for index, row in sales_data.iterrows():
+            # AccountNum will hold the value of the AccountNumber variable on the row
             accountNum = str(row['AccountNumber'])
+            # This is very similar to how the yearly averages were collected, except the code is repeated much more
+            # For the yearly averages, I repeated it 3 times for the 3 years present in the data
+            # For the monthly averages, I repreated it 12 times, one for each month
             if row['YEAR'] == yearansweravg:
                 if row['MONTHNUM'] == 1:
                     if accountNum not in monthavg1:
@@ -177,20 +214,30 @@ def ReturnNumber(answer):
                      "Sep": round(sum(monthavg9.values())/len(monthavg9.keys()), 2), "Oct": round(sum(monthavg10.values())/len(monthavg10.keys()), 2),
                      "Nov": round(sum(monthavg11.values())/len(monthavg11.keys()), 2), "Dec": round(sum(monthavg12.values())/len(monthavg12.keys()), 2)}
         return monthavgs
-    elif answer == "monthly change": # 5th option that doesn't work
-        # The goal was to count the number of times an account increased the orders from one month to the next
+    # This is a fifth option I started to work on but couldn't get to work and wanted to submit my work before too late
+    # The idea is for it to record whether an account had an increase or decrease in their sales between two months
+    # This particular section below us is only counting increases, the section in CreateGraph is trying to count decreases
+    elif answer == "monthly change":
         global yearanswer3
+        # montha starts as January, and monthb starts as February
+        # A flaw present is that it won't count the December to January increase or decrease, since that would span multiple years.
         montha = 1
         monthb = 2
         monthchaa = {}
         monthchab = {}
+        # Creating the dictionary that would be sent to CreateGraph
+        # Each month key would have a value of a int that equals the number of accounts that had an increase in sales between two months
         increasedict = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0,
                         "7": 0, "8": 0, "9": 0, "10": 0, "11": 0, "12": 0}
         yearanswer3 = int(input("What year would you like the monthly change from? "))
+        # While the 2nd month looked at is a real month, should stop at December (12)
+        # The while loop will also cause us to loop through the 220k rows 11 times, which is many more than any other answer choice
         while monthb < 13:
+            # For each row in the df, check if the year and month match
             for index, row in sales_data.iterrows():
                 accountNum = str(row['AccountNumber'])
                 if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == montha:
+                    # If the account is not already in the montha dict, add it now
                     if accountNum not in monthchaa:
                         monthchaa[str(accountNum)] = row['Order']
                 if row['YEAR'] == yearanswer3 and row['MONTHNUM'] == monthb:
@@ -201,6 +248,7 @@ def ReturnNumber(answer):
                 if key in monthchab:
                     if monthchaa[key] < monthchab[key]:
                         increasedict[str(monthb)] = increasedict[str(monthb)] + 1
+            # After looking through all of the rows, increase both variables by one and do it with the next pair of months
             montha += 1
             monthb += 1
         return increasedict
