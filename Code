@@ -253,15 +253,22 @@ def ReturnNumber(answer):
             monthb += 1
         return increasedict
 
+
+
 # Function that is responsible for using matplotlib to spit out the graphs
 # Also does extra calculations (like for the median) more than I would like 
 def CreateGraph(answer, returneddict):
+    # Like the ReturnNumber function, this function looks the ansewer variable to decide what code to run
     if answer == "yearly totals":
+        # Setting up the plots and making x be the keys of the dict, and y the values
         fig, ax = plt.subplots()
         myList = returneddict.items()
         x, y = zip(*myList)
+        # All of the plots in this code are line plots since we are dealing with time as the independent variable
         ax.plot(x, y)
+        # Making the y axis stretch to 0 to accurately represent the changes visually
         ax.set_ylim([0, 400000])
+        # Adding labels to the data and filling underneath the plot
         ax.fill_between(x, y)
         ax.set_xlabel("Years")
         ax.set_ylabel("Orders")
@@ -275,14 +282,19 @@ def CreateGraph(answer, returneddict):
         moptionslist = ["Yes", "No"]
         for i in moptionslist:
             print(i)
+        # Giving the user the option to see the monthly totals from 2017, 2018, & 2019 all together
+        # This causes the code to get messy, but makes a great display of information
         mondecision = str(input("Would you like to see all years? ")).lower()
         if mondecision == "yes":
             print("You will be prompted three times for what year would like")
+            # The user is having to tell the ReturnNumber function to run three times
             print("Please type in 2019, then 2018, then 2017 for this code to work")
             # This is the only way I could think of to get the data for all three years together
+            # The user needs to put the years in the correct order, or else the data display will be incorrect
             monthtot2019 = ReturnNumber(answer)
             monthtot2018 = ReturnNumber(answer)
             monthtot2017 = ReturnNumber(answer)
+            # Creating one combination graph, and three individual graphs in a 2x2 grid
             fig, ax = plt.subplots(2, 2)
             myList2019 = monthtot2019.items()
             myList2018 = monthtot2018.items()
@@ -317,7 +329,7 @@ def CreateGraph(answer, returneddict):
             ax[1, 1].set_title("Total Monthly Orders for 2019")
             for i in range(len(x)):
                 ax[1, 1].text(x[i], y19[i], y19[i], size=8, backgroundcolor="teal", color="white")
-            # Combo plot
+            # Combo plot that has the color cooridate with the colors of the individual year plots
             ax[0, 0].plot(x, y17, color="red")
             ax[0, 0].plot(x, y18, color="green")
             ax[0, 0].plot(x, y19, color="blue")
@@ -326,6 +338,7 @@ def CreateGraph(answer, returneddict):
             ax[0, 0].set_ylabel("Orders")
             ax[0, 0].set_title("Total Monthly Orders for all three years")
             plt.show()
+        # If the user doesn't want to see all of the years, the code is much simpler
         elif mondecision == "no":
             fig, ax = plt.subplots()
             myList = returneddict.items()
@@ -373,6 +386,7 @@ def CreateGraph(answer, returneddict):
         meddict = {"2017": med17, "2018": med18, "2019": med19}
         myList2 = meddict.items()
         x, y = zip(*myList2)
+        # Plotting the mean and median values on the same graph so they can easily be compared
         ax.plot(x, y)
         ax.set_xlabel("Years")
         ax.set_ylabel("Orders")
@@ -387,6 +401,7 @@ def CreateGraph(answer, returneddict):
         ax.plot(x, y)
         for i in range(len(x)):
             ax.text(x[i], y[i], y[i], size=10, backgroundcolor="teal", color="white")
+        # Have to repeat this code 12 times, one for each month. In the ReturnNumber function, it is also repeated 12 times to find all of the means
         monthavg1 = {}
         monthavg2 = {}
         monthavg3 = {}
@@ -465,7 +480,8 @@ def CreateGraph(answer, returneddict):
         ax.set_ylabel("Orders")
         ax.set_title(f"Mean Orders over Median Orders for {yearansweravg}")
         plt.show()
-    elif answer == "monthly change": # 5th option that doesn't work
+    # Trying to graph the 5th option that doesn't work
+    elif answer == "monthly change":
         # The code in the ReturnNumber function returned the dict of # of increases, this would've returned decreases
         fig, ax = plt.subplots()
         myList = returneddict.items()
@@ -493,6 +509,7 @@ def CreateGraph(answer, returneddict):
             monthb += 1
         myList2 = decreasedict.items()
         x, y2 = zip(*myList)
+        # Repeating the process to find out how many accounts sold 0 units in back to back months
         montha = 1
         monthb = 2
         monthchaa = {}
